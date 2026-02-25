@@ -8,47 +8,49 @@ using Unity.XR.CoreUtils;
 public class GlobalTime : MonoBehaviour
 {
     [Header("XR Simulator Lock (Editor Testing)")]
-    public GameObject xrInteractionSimulatorObject; // keep assigned if you want, but we won't SetActive() it
-    public Behaviour[] simulatorComponentsToDisable; // drag XR Device Simulator component(s) here
+    [SerializeField] private Behaviour[] simulatorComponentsToDisable;
 
     [Header("Timer")]
-    public float startTime = 120f;
-    public TextMeshProUGUI timerText;
+    [SerializeField] private float startTime = 120f;
+    [SerializeField] private TextMeshProUGUI timerText;
 
     [Header("UI")]
-    public GameObject resultsPanel;   // Results parent
-    public GameObject winMsg;         // WinMsg object
-    public GameObject loseMsg;        // LoseMsg object
-    public GameObject playAgainBtn;   // PlayAgainBtn object
+    [SerializeField] private GameObject resultsPanel;
+    [SerializeField] private GameObject winMsg;
+    [SerializeField] private GameObject loseMsg;
+    [SerializeField] private GameObject playAgainBtn;
 
     [Header("Player Reset")]
-    public Transform playerRoot;      // VR Player / XR Origin transform
-    public Transform cameraOffset;
-    public Behaviour[] movementToDisable; // movement scripts to disable (move/teleport) (optional)
-    public XROrigin xrOrigin;          // drag VR Player here (the object with XROrigin)
-    public CharacterController characterController; // optional: drag if VR Player has one
+    [SerializeField] private Transform playerRoot;
+    [SerializeField] private Transform cameraOffset;
+    [SerializeField] private XROrigin xrOrigin;
+    [SerializeField] private CharacterController characterController;
+
+    [Header("Locomotion Root")]
+    [SerializeField] private GameObject locomotionRoot;
+
+    [Header("Run Reset Dependencies")]
+    [SerializeField] private DebrisRespawner debrisRespawner;
+    [SerializeField] private DebrisCollection debrisCollection;
+
+    private float timeRemaining;
+    private bool ended;
 
     private Vector3 startCameraWorldPos;
     private Quaternion startRigRot;
-    private bool startCaptured = false;
-
-    [Header("TEMP Placeholder")]
-    public bool tasksCompleted = false; // later replace with real tasks system
-
-    [Header("Locomotion Root (RECOMMENDED)")]
-    public GameObject locomotionRoot;   // drag VR Player > Locomotion here
-
-    private float timeRemaining;
-    private bool ended = false;
+    private bool startCaptured;
 
     private Vector3 startPos;
     private Quaternion startRot;
     private Vector3 startOffsetPos;
     private Quaternion startOffsetRot;
 
-    void Start()
+    private void Start()
     {
         StartCoroutine(CaptureStartPoseNextFrame());
+
+        if (debrisRespawner != null)
+            debrisRespawner.Capture();
 
         timeRemaining = startTime;
         UpdateTimerDisplay();
@@ -69,9 +71,10 @@ public class GlobalTime : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
-        if (ended) return;
+        if (ended)
+            return;
 
         timeRemaining -= Time.deltaTime;
         if (timeRemaining < 0f) timeRemaining = 0f;
@@ -79,18 +82,16 @@ public class GlobalTime : MonoBehaviour
         UpdateTimerDisplay();
 
         if (timeRemaining <= 0f)
-        {
-            EndGame(false);
-        }
+            EndGame(isWin: false);
     }
 
-    // Called by FinishTrigger when player touches cylinder
+    // Called externally (e.g., FinishTrigger) when the run is completed.
     public void ReachFinish()
     {
-        if (ended) return;
+        if (ended)
+            return;
 
-        tasksCompleted = true;
-        EndGame(true);
+        EndGame(isWin: true);
     }
 
     private void EndGame(bool isWin)
@@ -103,16 +104,13 @@ public class GlobalTime : MonoBehaviour
         if (playAgainBtn != null) playAgainBtn.SetActive(true);
 
         SetMovementEnabled(false);
-
-        // IMPORTANT: Don't disable the entire simulator object,
-        // only disable the simulator movement component(s) you dragged in.
         SetSimulatorEnabled(false);
     }
 
+    // Hook this to the Play Again button OnClick.
     public void ResetRun()
     {
         ended = false;
-        tasksCompleted = false;
 
         timeRemaining = startTime;
         UpdateTimerDisplay();
@@ -120,10 +118,17 @@ public class GlobalTime : MonoBehaviour
         if (resultsPanel != null)
             resultsPanel.SetActive(false);
 
-        // Re-enable simulator immediately so editor controls come back
+        // Respawn gameplay objects and reset UI counters.
+        if (debrisRespawner != null)
+            debrisRespawner.RespawnAll();
+
+        if (debrisCollection != null)
+            debrisCollection.ResetRun();
+
+        // Re-enable editor simulator controls immediately.
         SetSimulatorEnabled(true);
 
-        // stop locomotion fighting the reset
+        // Temporarily disable locomotion so it does not fight the reset.
         SetMovementEnabled(false);
 
         StartCoroutine(ResetXRNextFrame());
@@ -131,9 +136,10 @@ public class GlobalTime : MonoBehaviour
 
     private System.Collections.IEnumerator ResetXRNextFrame()
     {
-        if (characterController != null) characterController.enabled = false;
+        if (characterController != null)
+            characterController.enabled = false;
 
-        yield return null; // wait 1 frame
+        yield return null;
 
         if (cameraOffset != null)
         {
@@ -153,9 +159,9 @@ public class GlobalTime : MonoBehaviour
 
         yield return null;
 
-        if (characterController != null) characterController.enabled = true;
+        if (characterController != null)
+            characterController.enabled = true;
 
-        // Make sure both locomotion + simulator are on after resetting
         SetMovementEnabled(true);
         SetSimulatorEnabled(true);
     }
@@ -164,22 +170,18 @@ public class GlobalTime : MonoBehaviour
     {
         if (locomotionRoot != null)
             locomotionRoot.SetActive(enabled);
-
-        // optional per-script disabling (you can leave list empty)
-        if (movementToDisable == null) return;
-        foreach (var b in movementToDisable)
-            if (b != null) b.enabled = enabled;
     }
 
     private void SetSimulatorEnabled(bool enabled)
     {
-        // DO NOT SetActive() the entire XR Interaction Simulator object here
-        // because it can kill input completely and not recover properly.
-        // Instead, toggle only the simulator components you drag in.
-        if (simulatorComponentsToDisable == null) return;
+        if (simulatorComponentsToDisable == null)
+            return;
 
         foreach (var c in simulatorComponentsToDisable)
-            if (c != null) c.enabled = enabled;
+        {
+            if (c != null)
+                c.enabled = enabled;
+        }
     }
 
     private void UpdateTimerDisplay()
