@@ -6,7 +6,7 @@ public class loco : MonoBehaviour
     private Vector3 currPosition;
     private Vector3 prevPosition;
     private Vector3 velocity;
-    private Vector3 driftVelocity;
+    
 
     private InputDevice controllerR;
     private InputDevice controllerL;
@@ -19,6 +19,7 @@ public class loco : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        
         //start the prevPosition at start
         prevPosition = transform.position;
 
@@ -37,6 +38,8 @@ public class loco : MonoBehaviour
         //velocity calc
         velocity = (currPosition - prevPosition) / Time.deltaTime;
 
+        
+
         Debug.Log(velocity);
         //store prev as current for next frame
         prevPosition = currPosition;
@@ -44,24 +47,26 @@ public class loco : MonoBehaviour
 
         if (isMovingForward)
         {
-            transform.position +=  velocity * Time.deltaTime;
+            Rigidbody rb = GetComponent<Rigidbody>();
+
+            
+            rb.linearVelocity = velocity;
+
+            
+            rb.linearVelocity *= 0.9999f;  
+
+
         }
 
         // controllerR grip and release
 
         if (controllerR.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateR))
         {
-            // Trigger once when pressed
-            if (currentGripStateR && !previousGripStateR)
-            {
-                Debug.Log("Grip pressed!");
-            }
+
 
             // Trigger once when released
             if (!currentGripStateR && previousGripStateR)
             {
-                Debug.Log("Grip released!");
-                driftVelocity = velocity;
                 isMovingForward = true;
             }
 
@@ -77,20 +82,11 @@ public class loco : MonoBehaviour
         // controllerL grip and release
         if (controllerL.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateL))
         {
-            // Trigger once when pressed
-            if (currentGripStateL && !previousGripStateL)
-            {
-                Debug.Log("Grip pressed!");
-            }
-
+        
             // Trigger once when released
             if (!currentGripStateL && previousGripStateL)
             {
-                Debug.Log("Grip released!");
-                driftVelocity = velocity;
                 isMovingForward = true;
-
-
 
             }
 
@@ -98,15 +94,15 @@ public class loco : MonoBehaviour
         }
         else
         {
-            // Re-fetch the device if disconnected
+            // Reconnect the device if disconnected
             controllerL = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
         }
 
         
 
-        
 
 
     }
     
+
 }
