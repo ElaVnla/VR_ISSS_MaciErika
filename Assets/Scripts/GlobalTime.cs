@@ -33,6 +33,10 @@ public class GlobalTime : MonoBehaviour
     [SerializeField] private DebrisRespawner debrisRespawner;
     [SerializeField] private DebrisCollection debrisCollection;
 
+    // ADDED: drag any other UI/task scripts here that need reset on Play Again
+    [Header("Extra Resettable Scripts")]
+    [SerializeField] private MonoBehaviour[] runResettables;
+
     private float timeRemaining;
     private bool ended;
 
@@ -134,6 +138,22 @@ public class GlobalTime : MonoBehaviour
         StartCoroutine(ResetXRNextFrame());
     }
 
+    // ADDED
+    private void ResetExtraRunDependencies()
+    {
+        if (runResettables == null)
+            return;
+
+        foreach (var mb in runResettables)
+        {
+            if (mb == null)
+                continue;
+
+            // Calls mb.ResetRun() if it exists (no interface needed)
+            mb.SendMessage("ResetRun", SendMessageOptions.DontRequireReceiver);
+        }
+    }
+
     private System.Collections.IEnumerator ResetXRNextFrame()
     {
         if (characterController != null)
@@ -157,7 +177,9 @@ public class GlobalTime : MonoBehaviour
             playerRoot.SetPositionAndRotation(startPos, startRot);
         }
 
+        // CHANGED: reset the docking UI/tasks AFTER the XR rig has been repositioned
         yield return null;
+        ResetExtraRunDependencies();
 
         if (characterController != null)
             characterController.enabled = true;
