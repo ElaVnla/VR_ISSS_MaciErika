@@ -129,9 +129,6 @@ public class GlobalTime : MonoBehaviour
         if (debrisCollection != null)
             debrisCollection.ResetRun();
 
-        // ADDED: reset other UI/task scripts (Seal check, docking screens, etc.)
-        ResetExtraRunDependencies();
-
         // Re-enable editor simulator controls immediately.
         SetSimulatorEnabled(true);
 
@@ -180,7 +177,9 @@ public class GlobalTime : MonoBehaviour
             playerRoot.SetPositionAndRotation(startPos, startRot);
         }
 
+        // CHANGED: reset the docking UI/tasks AFTER the XR rig has been repositioned
         yield return null;
+        ResetExtraRunDependencies();
 
         if (characterController != null)
             characterController.enabled = true;
