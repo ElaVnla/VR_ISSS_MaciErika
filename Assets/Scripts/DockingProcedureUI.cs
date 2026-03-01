@@ -36,6 +36,15 @@ public class DockingProcedureManager : MonoBehaviour
     [Header("Timing")]
     [SerializeField] private float stepDurationSeconds = 3f;
 
+    // ADDED: sequence lock settings
+    [Header("Sequence Lock")]
+    [SerializeField] private bool enforceSequence = true;
+
+    // ADDED: completion flags
+    private bool autoDockDone;
+    private bool verifySealDone;
+    private bool pressurizeDone;
+
     // Default (start) text snapshots
     private string verifySealLineDefault, pressurizeLineDefault, autoDockLineDefault;
     private string sealSensorDefault, leakRateDefault;
@@ -71,6 +80,10 @@ public class DockingProcedureManager : MonoBehaviour
 
     private IEnumerator RunVerifySeal()
     {
+        // ADDED: guard if sequence is enforced
+        if (enforceSequence && !autoDockDone)
+            yield break;
+
         if (verifyButton != null) verifyButton.interactable = false;
         yield return FillOverTime(verifyFill, stepDurationSeconds);
 
@@ -78,10 +91,18 @@ public class DockingProcedureManager : MonoBehaviour
         if (leakRateText != null) leakRateText.text = "Leak Rate: No leakage";
 
         MarkHudComplete(verifySealLine);
+
+        // ADDED: mark complete + unlock next
+        verifySealDone = true;
+        UpdateButtonLocks();
     }
 
     private IEnumerator RunPressurize()
     {
+        // ADDED: guard if sequence is enforced
+        if (enforceSequence && !verifySealDone)
+            yield break;
+
         if (pressurizeButton != null) pressurizeButton.interactable = false;
         yield return FillOverTime(pressurizeFill, stepDurationSeconds);
 
@@ -90,6 +111,10 @@ public class DockingProcedureManager : MonoBehaviour
         if (pressureText != null) pressureText.text = "Pressure: 101 kPa";
 
         MarkHudComplete(pressurizeLine);
+
+        // ADDED: mark complete + lock all
+        pressurizeDone = true;
+        UpdateButtonLocks();
     }
 
     private IEnumerator RunAutoDock()
@@ -101,6 +126,10 @@ public class DockingProcedureManager : MonoBehaviour
         if (captureSystemText != null) captureSystemText.text = "Capture System: Engaged";
 
         MarkHudComplete(autoDockLine);
+
+        // ADDED: mark complete + unlock next
+        autoDockDone = true;
+        UpdateButtonLocks();
     }
 
     private IEnumerator FillOverTime(Image fillImage, float duration)
@@ -132,10 +161,31 @@ public class DockingProcedureManager : MonoBehaviour
         line.color = pendingColor;
     }
 
+    // ADDED: lock/unlock buttons based on sequence
+    private void UpdateButtonLocks()
+    {
+        if (!enforceSequence)
+            return;
+
+        if (autoDockButton != null)
+            autoDockButton.interactable = !autoDockDone;
+
+        if (verifyButton != null)
+            verifyButton.interactable = autoDockDone && !verifySealDone;
+
+        if (pressurizeButton != null)
+            pressurizeButton.interactable = verifySealDone && !pressurizeDone;
+    }
+
     // IMPORTANT: GlobalTime calls this using SendMessage("ResetRun")
     public void ResetRun()
     {
         StopAllCoroutines();
+
+        // ADDED: reset completion flags
+        autoDockDone = false;
+        verifySealDone = false;
+        pressurizeDone = false;
 
         // Reset HUD lines (text + color)
         if (verifySealLine != null) verifySealLine.text = verifySealLineDefault;
@@ -145,11 +195,6 @@ public class DockingProcedureManager : MonoBehaviour
         MarkHudPending(verifySealLine);
         MarkHudPending(pressurizeLine);
         MarkHudPending(autoDockLine);
-
-        // Reset panels: buttons
-        if (verifyButton != null) verifyButton.interactable = true;
-        if (pressurizeButton != null) pressurizeButton.interactable = true;
-        if (autoDockButton != null) autoDockButton.interactable = true;
 
         // Reset panels: fills
         if (verifyFill != null) verifyFill.fillAmount = 0f;
@@ -166,5 +211,13 @@ public class DockingProcedureManager : MonoBehaviour
 
         if (autoDockStatusText != null) autoDockStatusText.text = autoDockStatusDefault;
         if (captureSystemText != null) captureSystemText.text = captureSystemDefault;
+
+        // CHANGED: do NOT set all buttons true here; let sequence decide
+        UpdateButtonLocks();
+    }
+
+    public bool AreAllSubtasksComplete()
+    {
+        return autoDockDone && verifySealDone && pressurizeDone;
     }
 }
