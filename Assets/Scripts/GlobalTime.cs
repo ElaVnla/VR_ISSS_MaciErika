@@ -129,6 +129,9 @@ public class GlobalTime : MonoBehaviour
         if (debrisCollection != null)
             debrisCollection.ResetRun();
 
+        // ADDED: reset docking UI/tasks + finish popup immediately
+        ResetExtraRunDependencies();
+
         // Re-enable editor simulator controls immediately.
         SetSimulatorEnabled(true);
 
@@ -137,7 +140,6 @@ public class GlobalTime : MonoBehaviour
 
         StartCoroutine(ResetXRNextFrame());
     }
-
     // ADDED
     private void ResetExtraRunDependencies()
     {
