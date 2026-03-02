@@ -12,20 +12,24 @@ public class loco : MonoBehaviour
     private InputDevice controllerL;
     private bool previousGripStateR = false;
     private bool previousGripStateL = false;
-
     private bool isMovingForward = false;
+
+    public GameObject grabMove;
+    public HandCollisions handScript;
     
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    
     void Start()
     {
-        
+        grabMove.SetActive(false);
         //start the prevPosition at start
         prevPosition = transform.position;
 
         //controllers
         controllerR = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
         controllerL = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+        
+
     }
 
     // Update is called once per frame
@@ -37,36 +41,35 @@ public class loco : MonoBehaviour
 
         //velocity calc
         velocity = (currPosition - prevPosition) / Time.deltaTime;
-
         
-
-        Debug.Log(velocity);
         //store prev as current for next frame
         prevPosition = currPosition;
         
 
         if (isMovingForward)
         {
+            //rigidbody velocity application
             Rigidbody rb = GetComponent<Rigidbody>();
 
-            
             rb.linearVelocity = velocity;
-
-            
-            rb.linearVelocity *= 0.9999f;  
-
-
         }
 
-        // controllerR grip and release
-
+        
+        //RIGHT controller
         if (controllerR.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateR))
         {
+            //grip is pressed
+            if (currentGripStateR && !previousGripStateR && handScript.isTouching)
+            {
+                //activates grab-move locomotion
+                grabMove.SetActive(true);
 
+            }
 
-            // Trigger once when released
+            // grip is released
             if (!currentGripStateR && previousGripStateR)
             {
+                grabMove.SetActive(false);
                 isMovingForward = true;
             }
 
@@ -79,17 +82,24 @@ public class loco : MonoBehaviour
         }
 
 
-        // controllerL grip and release
+        // LEFT controller
         if (controllerL.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateL))
         {
-        
-            // Trigger once when released
-            if (!currentGripStateL && previousGripStateL)
+            //grip is pressed
+            if (currentGripStateL && !previousGripStateL && handScript.isTouching)
             {
-                isMovingForward = true;
+                //activates grab-move locomotion
+                grabMove.SetActive(true);
 
             }
-
+            // grip is released
+            if (!currentGripStateL && previousGripStateL)
+            {
+                grabMove.SetActive(false);
+                isMovingForward = true;
+   
+            }
+            
             previousGripStateL = currentGripStateL;
         }
         else
@@ -97,12 +107,5 @@ public class loco : MonoBehaviour
             // Reconnect the device if disconnected
             controllerL = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
         }
-
-        
-
-
-
     }
-    
-
 }
