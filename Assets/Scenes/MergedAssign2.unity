@@ -1894,6 +1894,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1670256625, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1026265388}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -2270,6 +2273,7 @@ Rigidbody:
   m_Constraints: 0
   m_CollisionDetection: 2
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &121592498
 GameObject:
   m_ObjectHideFlags: 0
@@ -2541,6 +2545,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121592498}
   m_Mesh: {fileID: 9216986893841661389, guid: 7439e1f9a484b8849a9baeab2768778d, type: 3}
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 --- !u!1 &128594414 stripped
@@ -3898,7 +3904,11 @@ Rigidbody:
   m_Constraints: 0
   m_CollisionDetection: 0
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &185319291
+=======
+--- !u!1 &191293587 stripped
+>>>>>>> Stashed changes
 =======
 --- !u!1 &191293587 stripped
 >>>>>>> Stashed changes
@@ -4722,7 +4732,11 @@ Rigidbody:
   m_Constraints: 0
   m_CollisionDetection: 0
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &205770758
+=======
+--- !u!1 &206609709 stripped
+>>>>>>> Stashed changes
 =======
 --- !u!1 &206609709 stripped
 >>>>>>> Stashed changes
@@ -6298,7 +6312,11 @@ Camera:
   field of view: 60
   orthographic: 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   orthographic size: 10
+=======
+  orthographic size: 5
+>>>>>>> Stashed changes
 =======
   orthographic size: 5
 >>>>>>> Stashed changes
@@ -50917,7 +50935,11 @@ MeshCollider:
   m_CookingOptions: 30
   m_Mesh: {fileID: 7595542528838623718, guid: 8ac52da42f045d946a1242d34ce9004d, type: 3}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &1887551613
+=======
+--- !u!1 &1895186917 stripped
+>>>>>>> Stashed changes
 =======
 --- !u!1 &1895186917 stripped
 >>>>>>> Stashed changes
@@ -57919,6 +57941,7 @@ CanvasRenderer:
   m_GameObject: {fileID: 2137426600}
   m_CullTransparentMesh: 1
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &2143771698
 GameObject:
   m_ObjectHideFlags: 0
@@ -58190,6 +58213,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2143771698}
   m_Mesh: {fileID: -419994138692380790, guid: 7439e1f9a484b8849a9baeab2768778d, type: 3}
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 --- !u!1660057539 &9223372036854775807
