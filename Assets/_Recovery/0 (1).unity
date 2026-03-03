@@ -9121,6 +9121,7 @@ MonoBehaviour:
   completeColor: {r: 0, g: 1, b: 0, a: 1}
   playerRoot: {fileID: 499675871}
   characterController: {fileID: 499675869}
+  cameraTransform: {fileID: 0}
   pushDistance: 2
   pushDuration: 1.2
   movementProvidersToDisable: []
@@ -24141,6 +24142,7 @@ MonoBehaviour:
   cameraOffset: {fileID: 1947312387}
   xrOrigin: {fileID: 499675875}
   characterController: {fileID: 499675869}
+  disableCharacterControllerDuringReset: 1
   locomotionRoot: {fileID: 1759435638}
   debrisRespawner: {fileID: 825182836}
   debrisCollection: {fileID: 384312879}
