@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.XR;
 using UnityEngine.InputSystem;
 using TMPro;
 
@@ -17,6 +19,15 @@ public class DebrisCollection : MonoBehaviour
     [SerializeField] private Color notStartedColor = Color.white;
     [SerializeField] private Color inProgressColor = new Color(0.75f, 0.6f, 0.25f);
     [SerializeField] private Color completeColor = Color.green;
+
+    [Header("Push Back Effect")]
+    [SerializeField] private Transform playerRoot;
+    [SerializeField] private CharacterController characterController;  // drag your CC here
+    [SerializeField] private float pushDistance = 5.0f;
+    [SerializeField] private float pushDuration = 1.5f;
+
+    // temporarily disable your move provider while pushing
+    [SerializeField] private Behaviour[] movementProvidersToDisable;
 
     private int debrisCount;
     private GameObject debrisInRange;
@@ -64,6 +75,8 @@ public class DebrisCollection : MonoBehaviour
             debrisInRange = null;
 
             UpdateUI();
+
+            StartCoroutine(PushPlayerBack());
         }
     }
 
@@ -88,5 +101,68 @@ public class DebrisCollection : MonoBehaviour
         debrisCount = 0;
         debrisInRange = null;
         UpdateUI();
+    }
+
+    private IEnumerator PushPlayerBack()
+    {
+        if (playerRoot == null)
+        {
+            Debug.LogWarning("PushPlayerBack: playerRoot not assigned.");
+            yield break;
+        }
+
+        // Try to find CC automatically if not assigned
+        if (characterController == null)
+            characterController = playerRoot.GetComponent<CharacterController>();
+
+        // Use the XR camera forward (most reliable direction in XR)
+        Camera cam = Camera.main;
+        if (cam == null)
+        {
+            Debug.LogWarning("PushPlayerBack: Camera.main not found. Tag your XR Camera as MainCamera.");
+            yield break;
+        }
+
+        Vector3 backward = -cam.transform.forward;
+        backward.y = 0f;
+
+        if (backward.sqrMagnitude < 0.0001f)
+        {
+            Debug.LogWarning("PushPlayerBack: backward direction is zero.");
+            yield break;
+        }
+
+        backward.Normalize();
+
+        float moved = 0f;
+        float t = 0f;
+
+        while (t < pushDuration)
+        {
+            t += Time.deltaTime;
+
+            float progress = Mathf.Clamp01(t / pushDuration);
+            float smooth = 1f - Mathf.Pow(1f - progress, 3f); // ease-out
+
+            float targetMoved = pushDistance * smooth;
+            float step = targetMoved - moved;
+            moved = targetMoved;
+
+            Vector3 delta = backward * step;
+
+            if (characterController != null)
+            {
+                characterController.Move(delta);
+            }
+            else
+            {
+                // Fallback if CC isn't found
+                playerRoot.position += delta;
+            }
+
+            yield return null;
+        }
+
+        Debug.Log($"PushPlayerBack done. Intended distance: {pushDistance}, moved: {moved}");
     }
 }
