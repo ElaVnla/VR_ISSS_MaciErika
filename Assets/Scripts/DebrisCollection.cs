@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.XR;
 using UnityEngine.InputSystem;
 using TMPro;
 
@@ -22,7 +21,8 @@ public class DebrisCollection : MonoBehaviour
 
     [Header("Push Back Effect")]
     [SerializeField] private Transform playerRoot;
-    [SerializeField] private CharacterController characterController;  // drag your CC here
+    [SerializeField] private CharacterController characterController;  // drag your CC here if you use one
+    [SerializeField] private Transform cameraTransform;               // drag XR Origin -> Camera Offset -> Main Camera (recommended)
     [SerializeField] private float pushDistance = 5.0f;
     [SerializeField] private float pushDuration = 1.5f;
 
@@ -31,6 +31,7 @@ public class DebrisCollection : MonoBehaviour
 
     private int debrisCount;
     private GameObject debrisInRange;
+    private Coroutine pushRoutine;
 
     private void OnEnable()
     {
@@ -49,15 +50,21 @@ public class DebrisCollection : MonoBehaviour
         UpdateUI();
     }
 
-    private void OnTriggerEnter(Collider other)
+    // Works if THIS script is on the same object that has the trigger collider.
+    private void OnTriggerEnter(Collider other) => OnDebrisTriggerEnter(other);
+    private void OnTriggerExit(Collider other) => OnDebrisTriggerExit(other);
+
+    // NEW: Works if you put the trigger collider somewhere else (e.g., Right Controller)
+    // and forward the trigger events via DebrisTriggerProxy.
+    public void OnDebrisTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Debris"))
+        if (other != null && other.CompareTag("Debris"))
             debrisInRange = other.gameObject;
     }
 
-    private void OnTriggerExit(Collider other)
+    public void OnDebrisTriggerExit(Collider other)
     {
-        if (debrisInRange == other.gameObject)
+        if (other != null && debrisInRange == other.gameObject)
             debrisInRange = null;
     }
 
@@ -76,7 +83,11 @@ public class DebrisCollection : MonoBehaviour
 
             UpdateUI();
 
-            StartCoroutine(PushPlayerBack());
+            // Restart push if player spam-collects quickly
+            if (pushRoutine != null)
+                StopCoroutine(pushRoutine);
+
+            pushRoutine = StartCoroutine(PushPlayerBack());
         }
     }
 
@@ -100,6 +111,16 @@ public class DebrisCollection : MonoBehaviour
     {
         debrisCount = 0;
         debrisInRange = null;
+
+        if (pushRoutine != null)
+        {
+            StopCoroutine(pushRoutine);
+            pushRoutine = null;
+        }
+
+        // Ensure locomotion is not left disabled
+        SetMovementProvidersEnabled(true);
+
         UpdateUI();
     }
 
@@ -115,15 +136,21 @@ public class DebrisCollection : MonoBehaviour
         if (characterController == null)
             characterController = playerRoot.GetComponent<CharacterController>();
 
-        // Use the XR camera forward (most reliable direction in XR)
-        Camera cam = Camera.main;
-        if (cam == null)
+        // Choose camera transform
+        Transform camT = cameraTransform;
+        if (camT == null)
         {
-            Debug.LogWarning("PushPlayerBack: Camera.main not found. Tag your XR Camera as MainCamera.");
+            Camera cam = Camera.main;
+            if (cam != null) camT = cam.transform;
+        }
+
+        if (camT == null)
+        {
+            Debug.LogWarning("PushPlayerBack: No cameraTransform and Camera.main not found. Assign cameraTransform in Inspector.");
             yield break;
         }
 
-        Vector3 backward = -cam.transform.forward;
+        Vector3 backward = -camT.forward;
         backward.y = 0f;
 
         if (backward.sqrMagnitude < 0.0001f)
@@ -133,6 +160,9 @@ public class DebrisCollection : MonoBehaviour
         }
 
         backward.Normalize();
+
+        // IMPORTANT: disable movement providers so push actually takes effect smoothly
+        SetMovementProvidersEnabled(false);
 
         float moved = 0f;
         float t = 0f;
@@ -156,13 +186,46 @@ public class DebrisCollection : MonoBehaviour
             }
             else
             {
-                // Fallback if CC isn't found
                 playerRoot.position += delta;
             }
 
             yield return null;
         }
 
+        SetMovementProvidersEnabled(true);
+        pushRoutine = null;
+
         Debug.Log($"PushPlayerBack done. Intended distance: {pushDistance}, moved: {moved}");
+    }
+
+    private void SetMovementProvidersEnabled(bool enabled)
+    {
+        if (movementProvidersToDisable == null)
+            return;
+
+        foreach (var p in movementProvidersToDisable)
+        {
+            if (p != null)
+                p.enabled = enabled;
+        }
+    }
+}
+
+// OPTIONAL helper (same file): put this on the object that has the trigger collider (e.g., Right Controller)
+// and drag your DebrisCollection into the field.
+public class DebrisTriggerProxy : MonoBehaviour
+{
+    [SerializeField] private DebrisCollection debrisCollection;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (debrisCollection != null)
+            debrisCollection.OnDebrisTriggerEnter(other);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (debrisCollection != null)
+            debrisCollection.OnDebrisTriggerExit(other);
     }
 }

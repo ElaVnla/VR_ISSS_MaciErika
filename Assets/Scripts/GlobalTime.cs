@@ -26,6 +26,10 @@ public class GlobalTime : MonoBehaviour
     [SerializeField] private XROrigin xrOrigin;
     [SerializeField] private CharacterController characterController;
 
+    // ADDED: some Quest rigs break if we disable CharacterController
+    [Header("Reset Options")]
+    [SerializeField] private bool disableCharacterControllerDuringReset = true;
+
     [Header("Locomotion Root")]
     [SerializeField] private GameObject locomotionRoot;
 
@@ -33,7 +37,6 @@ public class GlobalTime : MonoBehaviour
     [SerializeField] private DebrisRespawner debrisRespawner;
     [SerializeField] private DebrisCollection debrisCollection;
 
-    // ADDED: drag any other UI/task scripts here that need reset on Play Again
     [Header("Extra Resettable Scripts")]
     [SerializeField] private MonoBehaviour[] runResettables;
 
@@ -89,7 +92,6 @@ public class GlobalTime : MonoBehaviour
             EndGame(isWin: false);
     }
 
-    // Called externally (e.g., FinishTrigger) when the run is completed.
     public void ReachFinish()
     {
         if (ended)
@@ -111,7 +113,6 @@ public class GlobalTime : MonoBehaviour
         SetSimulatorEnabled(false);
     }
 
-    // Hook this to the Play Again button OnClick.
     public void ResetRun()
     {
         ended = false;
@@ -122,17 +123,14 @@ public class GlobalTime : MonoBehaviour
         if (resultsPanel != null)
             resultsPanel.SetActive(false);
 
-        // Respawn gameplay objects and reset UI counters.
         if (debrisRespawner != null)
             debrisRespawner.RespawnAll();
 
         if (debrisCollection != null)
             debrisCollection.ResetRun();
 
-        // ADDED: reset docking UI/tasks + finish popup immediately
         ResetExtraRunDependencies();
 
-        // Re-enable editor simulator controls immediately.
         SetSimulatorEnabled(true);
 
         // Temporarily disable locomotion so it does not fight the reset.
@@ -140,7 +138,7 @@ public class GlobalTime : MonoBehaviour
 
         StartCoroutine(ResetXRNextFrame());
     }
-    // ADDED
+
     private void ResetExtraRunDependencies()
     {
         if (runResettables == null)
@@ -151,14 +149,14 @@ public class GlobalTime : MonoBehaviour
             if (mb == null)
                 continue;
 
-            // Calls mb.ResetRun() if it exists (no interface needed)
             mb.SendMessage("ResetRun", SendMessageOptions.DontRequireReceiver);
         }
     }
 
     private System.Collections.IEnumerator ResetXRNextFrame()
     {
-        if (characterController != null)
+        // CHANGED: only disable CC if option is enabled
+        if (disableCharacterControllerDuringReset && characterController != null)
             characterController.enabled = false;
 
         yield return null;
@@ -179,11 +177,11 @@ public class GlobalTime : MonoBehaviour
             playerRoot.SetPositionAndRotation(startPos, startRot);
         }
 
-        // CHANGED: reset the docking UI/tasks AFTER the XR rig has been repositioned
         yield return null;
         ResetExtraRunDependencies();
 
-        if (characterController != null)
+        // CHANGED: only re-enable CC if we disabled it
+        if (disableCharacterControllerDuringReset && characterController != null)
             characterController.enabled = true;
 
         SetMovementEnabled(true);
