@@ -15,10 +15,10 @@ public class loco : MonoBehaviour
     private bool isMovingForward = false;
 
     public GameObject grabMove;
-    public HandCollisions handScript;
-    
+    public HandCollisions RhandScript;
+    public HandCollisions LhandScript;
 
-    
+
     void Start()
     {
         grabMove.SetActive(false);
@@ -59,7 +59,7 @@ public class loco : MonoBehaviour
         if (controllerR.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateR))
         {
             //grip is pressed
-            if (currentGripStateR && !previousGripStateR && handScript.isTouching)
+            if (currentGripStateR && !previousGripStateR && RhandScript.isTouching)
             {
                 //activates grab-move locomotion
                 grabMove.SetActive(true);
@@ -86,7 +86,7 @@ public class loco : MonoBehaviour
         if (controllerL.TryGetFeatureValue(CommonUsages.gripButton, out bool currentGripStateL))
         {
             //grip is pressed
-            if (currentGripStateL && !previousGripStateL && handScript.isTouching)
+            if (currentGripStateL && !previousGripStateL && LhandScript.isTouching)
             {
                 //activates grab-move locomotion
                 grabMove.SetActive(true);
