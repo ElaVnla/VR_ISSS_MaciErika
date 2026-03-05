@@ -2241,6 +2241,7 @@ MonoBehaviour:
   cameraOffset: {fileID: 924460842}
   xrOrigin: {fileID: 978858538}
   characterController: {fileID: 978858540}
+  disableCharacterControllerDuringReset: 1
   locomotionRoot: {fileID: 1173871936}
   debrisRespawner: {fileID: 1510260047}
   debrisCollection: {fileID: 1665304856}
@@ -7990,7 +7991,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8135023674665499069, guid: 58d0a4ac86f2348deb02f3880c71378e, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8518324294302271954, guid: 58d0a4ac86f2348deb02f3880c71378e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9809,6 +9810,7 @@ MonoBehaviour:
   completeColor: {r: 0, g: 1, b: 0, a: 1}
   playerRoot: {fileID: 978858539}
   characterController: {fileID: 978858540}
+  cameraTransform: {fileID: 0}
   pushDistance: 2
   pushDuration: 1.2
   movementProvidersToDisable: []
