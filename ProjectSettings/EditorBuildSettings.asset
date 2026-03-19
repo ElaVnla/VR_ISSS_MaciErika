@@ -5,12 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 55daccc09a3b69647bbab145b54a3ab3
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MergedAssign2.unity
     guid: dba70baadea35b140aeff1955f38cf6f
+  - enabled: 1
+    path: Assets/Scenes/SpaceWalk.unity
+    guid: 3682f5ed0365ef645a4977cab97b2eea
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: d66bd569f865a7b41b7e02f78105450b, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}
