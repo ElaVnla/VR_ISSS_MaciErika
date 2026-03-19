@@ -14,6 +14,8 @@ public class loco : MonoBehaviour
     private bool previousGripStateL = false;
     private bool isMovingForward = false;
 
+    
+
     public GameObject grabMove;
     public HandCollisions RhandScript;
     public HandCollisions LhandScript;
