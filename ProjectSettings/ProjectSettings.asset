@@ -144,11 +144,7 @@ PlayerSettings:
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
   bundleVersion: 9.2.1
-  preloadedAssets:
-  - {fileID: 4226981303226134123, guid: b716680a41c7a094fa3b7fb9a8024a67, type: 2}
-  - {fileID: 3965299812520945638, guid: a1e160f6f303eb54a8940e7c9dd1461f, type: 2}
-  - {fileID: 11400000, guid: d66bd569f865a7b41b7e02f78105450b, type: 2}
-  - {fileID: 11400000, guid: 908d62378b8205449861e5838a18a596, type: 2}
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -1009,11 +1005,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: 2ccd7737-86f7-49d0-a747-3f617943fed3
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: VR_ISSS_MaciErika
+  organizationId: erikasampang
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
