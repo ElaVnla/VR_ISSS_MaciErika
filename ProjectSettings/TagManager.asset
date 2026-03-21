@@ -7,6 +7,9 @@ TagManager:
   - Anchor
   - Debris
   - GrabWalls
+  - SmallDebris
+  - MediumDebris
+  - LargeDebris
   layers:
   - Default
   - TransparentFX
